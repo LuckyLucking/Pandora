@@ -358,8 +358,10 @@ MonoBehaviour:
   worldLength: 100
   worldWidth: 100
   worldHeight: 1
-  waterChance: 2
-  waterConnectChance: 85
+  waterAmount: 4
+  waterConnectChance: 70
+  waterChance: 60
+  maxWaterTilesPerLake: 60
   treeChance: 0
   grassChance: 0
   treeAmount: 0
