@@ -302,7 +302,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 35.3, y: 6.2, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -355,15 +355,17 @@ MonoBehaviour:
   groundPrefab: {fileID: 8740360723005796289, guid: 063e0f2b141c00d4db0856e0b36a72d4, type: 3}
   waterPrefab: {fileID: 635959270558592399, guid: 53b912c28df3f604796ffc13bf177a79, type: 3}
   treePrefab: {fileID: 5418652866971590770, guid: 53877a49ff48c3b4880179da09bc682a, type: 3}
-  worldLength: 100
-  worldWidth: 100
+  grassPrefab: {fileID: 5895043729917064685, guid: ac006270d75c8654884168212e19d527, type: 3}
+  worldLength: 50
+  worldWidth: 50
   worldHeight: 1
   waterAmount: 4
-  waterConnectChance: 70
-  waterChance: 60
-  maxWaterTilesPerLake: 60
-  treeChance: 0
-  grassChance: 0
+  waterConnectChance: 80
+  waterChance: 70
+  maxWaterTilesPerLake: 80
+  minWaterAmount: 2
+  treeChance: 1
+  grassChance: 2
   treeAmount: 0
   grassAmount: 0
 --- !u!1660057539 &9223372036854775807

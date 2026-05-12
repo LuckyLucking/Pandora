@@ -8,6 +8,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject groundPrefab;
     public GameObject waterPrefab;
     public GameObject treePrefab;
+    public GameObject grassPrefab;
+    //public LayerMask whatIsGround;
+    //public LayerMask whatIsWater;
+    //public LayerMask whatIsTree;
     public bool[,,] isTaken;
     public int worldLength, worldWidth,worldHeight;
     private List<int> waterSeed;
@@ -15,6 +19,7 @@ public class MapGenerator : MonoBehaviour
     public int waterConnectChance;
     public int waterChance = 30;
     public int maxWaterTilesPerLake = 120;
+    public int minWaterAmount = 2;
     public int treeChance; 
     public int grassChance;
 
@@ -39,16 +44,22 @@ public class MapGenerator : MonoBehaviour
 
         if (worldLength <= 0 || waterAmount <= 0)
         {
-            return;
+            return; 
         }
 
         int r = Random.Range(0, 100);
+
         int s = 1;
-        int seed = Random.Range(0, worldLength);
-        waterSeed.Add(seed);
-        while (r <= waterChance && s <= waterAmount - 1)
+
+        while (s <= minWaterAmount)
         {
-            seed = Random.Range(0, worldLength);
+            int seed = Random.Range(0, worldLength);
+            waterSeed.Add(seed);
+            s++;
+        }
+        while (r <= waterChance && s <= waterAmount)
+        {
+            int seed = Random.Range(0, worldLength);
             waterSeed.Add(seed);
             s++;
             r = Random.Range(0, 100);
@@ -67,6 +78,51 @@ public class MapGenerator : MonoBehaviour
             int w = Random.Range(0, worldWidth);
             GenerateWaterLake(waterSeed[s], 0, w);
         }
+        for (int x = 0; x < worldLength; x++)
+        {
+            for (int y = 0; y < worldHeight; y++)
+            {
+                for (int z = 0; z < worldWidth; z++)
+                {
+                    GenerateGround(x, y, z);
+                }
+            }
+        }
+    }
+
+    private void GenerateGround(int x, int y, int z)
+    {
+        if (isTaken[x, y, z] || groundPrefab == null)
+            return;
+
+        GameObject ground = Instantiate(groundPrefab, new Vector3(x + 0.5f, y + 0.5f, z + 0.5f), Quaternion.identity, transform);
+        ground.name = groundPrefab.name;
+        ground.tag = "Ground";
+        ground.layer = LayerMask.NameToLayer("Ground");
+        isTaken[x, y, z] = true;
+
+        int tChance = Random.Range(0, 99);
+        int gChance = Random.Range(0, 99);
+        if (tChance < treeChance)
+            GenerateTree(x, y + 1, z);
+        else if (gChance < grassChance)
+            GenerateGrass(x, y+1, z);
+
+    }
+
+    private void GenerateGrass(int x, int y, int z)
+    {
+        GameObject grass = Instantiate(grassPrefab, new Vector3(x + 0.5f, y + 0.5f, z + 0.5f), Quaternion.identity, transform);
+        grass.name = grassPrefab.name;
+        grass.tag = "Grass";
+        grass.layer = LayerMask.NameToLayer("Grass");
+    }
+    private void GenerateTree(int x, int y, int z)
+    {
+        GameObject tree = Instantiate(treePrefab, new Vector3(x + 0.5f, y + 0.5f, z + 0.5f), Quaternion.identity, transform);
+        tree.name = treePrefab.name;
+        tree.tag = "Tree";
+        tree.layer = LayerMask.NameToLayer("Tree");
     }
 
     //水平面是x轴和z轴
@@ -100,6 +156,9 @@ public class MapGenerator : MonoBehaviour
 
             GameObject water = Instantiate(waterPrefab, new Vector3(x + 0.5f, y + 0.5f, z + 0.5f), Quaternion.identity, transform);
             water.name = waterPrefab.name;
+            water.tag = "Water";
+            water.layer = LayerMask.NameToLayer("Water");
+
             isTaken[x, y, z] = true;
             generatedTiles++;
 
