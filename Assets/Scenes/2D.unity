@@ -245,12 +245,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 772cf25e53d48b44a91587e8b4b54b9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 100
-  height: 100
-  groundSp: {fileID: 0}
-  grassSp: {fileID: 0}
-  meatSp: {fileID: 0}
-  treeSp: {fileID: 0}
+  width: 50
+  height: 50
+  groundSp: {fileID: 9203082385733859163, guid: ff98608d2cf78a34584c5ec91e0c725f, type: 3}
+  grassSp: {fileID: 525954472016029250, guid: 6023936ca32abd94b97d217e4b967757, type: 3}
+  meatSp: {fileID: 1115693603179004951, guid: 0f3b4cead6a88bc4f8d7d92681a4fe9c, type: 3}
+  treeSp: {fileID: 5523506681373109629, guid: 343b0b57b430fdc4c9ebf8fb26f440b9, type: 3}
+  treeChance: 1
+  grassChance: 3
+  meatChance: 1
+  grassAmount: 0
+  meatAmount: 0
 --- !u!4 &1092392897
 Transform:
   m_ObjectHideFlags: 0
@@ -260,7 +265,7 @@ Transform:
   m_GameObject: {fileID: 1092392895}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 14.154227, y: -25.537312, z: 16.877384}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -301,7 +306,7 @@ Camera:
   m_GameObject: {fileID: 1464659747}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -325,10 +330,10 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: -1
+  field of view: 26.991467
+  orthographic: 1
+  orthographic size: 10
+  m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -352,7 +357,7 @@ Transform:
   m_GameObject: {fileID: 1464659747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 26.7, y: 26.4, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
