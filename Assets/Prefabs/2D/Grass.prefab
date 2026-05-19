@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3253294673835967353}
   - component: {fileID: 288500454929754710}
+  - component: {fileID: 452381811000466179}
   - component: {fileID: 3490372422108644869}
   m_Layer: 0
   m_Name: Grass
@@ -73,7 +74,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0.7029519, g: 1, b: 0, a: 1}
   m_FlipX: 0
@@ -85,6 +86,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &452381811000466179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 525954472016029250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c23d3c9cda47dd409d0df49899151be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grassFullfillAmount: 10
+  grassCurrentAmount: 0
 --- !u!58 &3490372422108644869
 CircleCollider2D:
   m_ObjectHideFlags: 0

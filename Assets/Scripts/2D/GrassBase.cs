@@ -4,15 +4,11 @@ using UnityEngine;
 
 public class GrassBase : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public float grassFullfillAmount;
+    public float grassCurrentAmount;
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        
+        grassCurrentAmount = grassFullfillAmount;
     }
 }

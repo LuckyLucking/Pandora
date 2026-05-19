@@ -20,8 +20,10 @@ public class PandoraGenerator : MonoBehaviour
     public float meatChance = 10;
 
     [Header("Resources")]
-    public int grassAmount = 0;
-    public int meatAmount = 0;
+    public List<GrassBase> grassAmount;
+    public float grassGenerateTimer = 10f;
+    public List<MeatBase> meatAmount;
+    public float meatResolveTimer = 10f;
 
     private void Start()
     {
@@ -42,7 +44,7 @@ public class PandoraGenerator : MonoBehaviour
     private void InitMap(int x,int y)
     {
         GenerateBorder(x, y);
-        int tChance = Random.Range(0, 99);
+        int tChance = Random.Range(0, 100);
 
         if (tChance <= treeChance && isTaken[x, y] == false)
             GenerateTree(x, y);
@@ -50,12 +52,12 @@ public class PandoraGenerator : MonoBehaviour
         if (isTaken[x, y] == false)
             GenerateGround(x, y);
 
-        int gChance = Random.Range(0, 99);
+        int gChance = Random.Range(0, 100);
 
         if (gChance <= grassChance && isTaken[x, y] == false)
             GenerateGrass(x, y);
 
-        int mChance = Random.Range(0, 99);
+        int mChance = Random.Range(0, 100);
         if(mChance <= meatChance && isTaken[x, y] == false)
             GenerateMeat(x, y);
     }
@@ -85,10 +87,22 @@ public class PandoraGenerator : MonoBehaviour
     {
         GameObject grass = Instantiate(grassSp, new Vector3(x + 0.5f, y + 0.5f), grassSp.transform.rotation, transform);
         isTaken[x, y] = true;
+        GrassBase g = grass.GetComponent<GrassBase>();
+        grassAmount.Add(g);
     }   
     private void GenerateMeat(int x, int y)
     {
         GameObject meat = Instantiate(meatSp, new Vector3(x + 0.5f, y + 0.5f), meatSp.transform.rotation, transform);
         isTaken[x, y] = true;
+        MeatBase m = meat.GetComponent<MeatBase>();
+        int size = Random.Range(1, 4);
+        switch (size)
+        {
+            case 1: m.meatCurrentAmount = 10; m.ChangeSize(MeatState.Small); break;
+            case 2: m.meatCurrentAmount = 20; m.ChangeSize(MeatState.Medium); break;
+            case 3: m.meatCurrentAmount = 30; m.ChangeSize(MeatState.Masive); break;
+        }
+
+        meatAmount.Add(m);
     }
 }
