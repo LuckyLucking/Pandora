@@ -254,8 +254,18 @@ MonoBehaviour:
   treeChance: 1
   grassChance: 3
   meatChance: 1
-  grassAmount: 0
-  meatAmount: 0
+  grassAmount: []
+  grassGenerateTimer: 10
+  meatAmount: []
+  meatResolveTimer: 10
+  animalSpawnEntries:
+  - animalPrefab: {fileID: 5311424067852727270, guid: 2cb892ef8dd88e840a39cf30a648605d, type: 3}
+    statSetup: {fileID: 11400000, guid: ee2eb1e649d28f840932209721fcb7bf, type: 2}
+    spawnCount: 5
+  - animalPrefab: {fileID: 1225498590418184258, guid: 3f49cd616da545c47be4dc58cd73e231, type: 3}
+    statSetup: {fileID: 11400000, guid: 8a5e84f6c8d1f6a44b0e4b9730160d4a, type: 2}
+    spawnCount: 10
+  animalAmount: []
 --- !u!4 &1092392897
 Transform:
   m_ObjectHideFlags: 0

@@ -2,6 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class AnimalSpawnEntry
+{
+    public AnimalBase animalPrefab;
+    public StatSetup statSetup;
+    public int spawnCount = 5;
+}
+
 public class PandoraGenerator : MonoBehaviour
 {
     public bool[,] isTaken;
@@ -25,11 +33,23 @@ public class PandoraGenerator : MonoBehaviour
     public List<MeatBase> meatAmount;
     public float meatResolveTimer = 10f;
 
+    [Header("Animals")]
+    public List<AnimalSpawnEntry> animalSpawnEntries;
+    public List<AnimalBase> animalAmount;
+
     private void Start()
     {
+        if (grassAmount == null)
+            grassAmount = new List<GrassBase>();
+        if (meatAmount == null)
+            meatAmount = new List<MeatBase>();
+        if (animalAmount == null)
+            animalAmount = new List<AnimalBase>();
+
         isTaken = new bool[width, height];
 
         GenerateTerrain();
+        GenerateAnimals();
     }
     private void GenerateTerrain()
     {
@@ -46,8 +66,8 @@ public class PandoraGenerator : MonoBehaviour
         GenerateBorder(x, y);
         int tChance = Random.Range(0, 100);
 
-        if (tChance <= treeChance && isTaken[x, y] == false)
-            GenerateTree(x, y);
+        //if (tChance <= treeChance && isTaken[x, y] == false)
+        //    GenerateTree(x, y);
 
         if (isTaken[x, y] == false)
             GenerateGround(x, y);
@@ -98,11 +118,57 @@ public class PandoraGenerator : MonoBehaviour
         int size = Random.Range(1, 4);
         switch (size)
         {
-            case 1: m.meatCurrentAmount = 10; m.ChangeSize(MeatState.Small); break;
-            case 2: m.meatCurrentAmount = 20; m.ChangeSize(MeatState.Medium); break;
-            case 3: m.meatCurrentAmount = 30; m.ChangeSize(MeatState.Masive); break;
+            case 1: m.meatMaxAmount = 10; break;
+            case 2: m.meatMaxAmount = 20; break;
+            case 3: m.meatMaxAmount = 30; break;
         }
+        m.InitMeatState();
 
         meatAmount.Add(m);
+    }
+
+    private void GenerateAnimals()
+    {
+        if (animalSpawnEntries == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < animalSpawnEntries.Count; i++)
+        {
+            AnimalSpawnEntry entry = animalSpawnEntries[i];
+            if (entry == null || entry.animalPrefab == null || entry.statSetup == null || entry.spawnCount <= 0)
+            {
+                continue;
+            }
+
+            for (int count = 0; count < entry.spawnCount; count++)
+            {
+                TrySpawnAnimal(entry);
+            }
+        }
+    }
+
+    private bool TrySpawnAnimal(AnimalSpawnEntry entry)
+    {
+        const int maxAttempts = 200;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            int x = Random.Range(0, width);
+            int y = Random.Range(0, height);
+            if (isTaken[x, y])
+            {
+                continue;
+            }
+
+            Vector3 spawnPosition = new Vector3(x + 0.5f, y + 0.5f, 0f);
+            AnimalBase animal = Instantiate(entry.animalPrefab, spawnPosition, entry.animalPrefab.transform.rotation, transform);
+            animal.InitializeFromSetup(entry.statSetup);
+            animalAmount.Add(animal);
+            isTaken[x, y] = true;
+            return true;
+        }
+
+        return false;
     }
 }

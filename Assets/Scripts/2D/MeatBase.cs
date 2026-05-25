@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum MeatState
@@ -12,42 +10,92 @@ public class MeatBase : MonoBehaviour
 {
     public MeatState currentState;
 
-    public float meatCurrentAmount;
+    public float meatMaxAmount;
+    public float meatCurrentAMount;
+    private Vector3 baseScale;
+    private bool scaleCached;
 
     private void Awake()
     {
         InitMeatState();
     }
 
-    private void Update()
-    {
-        
-    }
-
     public void InitMeatState()
     {
-        if (meatCurrentAmount > 0 && meatCurrentAmount <= 10f)
+        CacheBaseScale();
+        meatMaxAmount = Mathf.Max(0f, meatMaxAmount);
+
+        if (meatMaxAmount > 0 && meatMaxAmount <= 10f)
             ChangeSize(MeatState.Small);
-        else if (meatCurrentAmount > 10 && meatCurrentAmount <= 20f)
+        else if (meatMaxAmount > 10 && meatMaxAmount <= 20f)
             ChangeSize(MeatState.Medium);
-        else
+        else if(meatMaxAmount > 20f && meatMaxAmount <=30f)
             ChangeSize(MeatState.Masive);
+
+        meatCurrentAMount = meatMaxAmount;
+        UpdateVisual();
     }
     public void ChangeSize(MeatState changeState)
     {
-        if (changeState == MeatState.Small)
+        currentState = changeState;
+        UpdateVisual();
+    }
+
+    public float Consume(float amount)
+    {
+        if (amount <= 0f || meatCurrentAMount <= 0f)
         {
-            currentState = MeatState.Small;
-            transform.localScale *= 0.5f;
+            return 0f;
         }
-        if (changeState == MeatState.Medium)
+
+        float consumed = Mathf.Min(amount, meatCurrentAMount);
+        meatCurrentAMount -= consumed;
+        UpdateVisual();
+        return consumed;
+    }
+
+    public bool IsDepleted()
+    {
+        return meatCurrentAMount <= 0f;
+    }
+
+    public float GetNormalizedAmount()
+    {
+        if (meatMaxAmount <= 0f)
         {
-            currentState = MeatState.Medium;
-            transform.localScale *= 0.7f;
+            return 0f;
         }
-        if (currentState == MeatState.Masive)
+
+        return Mathf.Clamp01(meatCurrentAMount / meatMaxAmount);
+    }
+
+    private void CacheBaseScale()
+    {
+        if (scaleCached)
         {
-            currentState = MeatState.Masive;
+            return;
         }
+
+        baseScale = transform.localScale;
+        scaleCached = true;
+    }
+
+    private float GetStateScaleMultiplier()
+    {
+        switch (currentState)
+        {
+            case MeatState.Small:
+                return 0.5f;
+            case MeatState.Medium:
+                return 0.7f;
+            default:
+                return 1f;
+        }
+    }
+
+    private void UpdateVisual()
+    {
+        CacheBaseScale();
+        transform.localScale = baseScale * GetStateScaleMultiplier() * GetNormalizedAmount();
     }
 }

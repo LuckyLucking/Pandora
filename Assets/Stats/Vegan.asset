@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a42e2a3e83b3c4419352c926a9dab28, type: 3}
+  m_Name: Vegan
+  m_EditorClassIdentifier: 
+  speciesID: 0
+  speciesName: Vegan
+  dietHabit: 1
+  bodySize: 1
+  moveSpeed: 6
+  turnSpeed: 360
+  visionRange: 5
+  foodSearchAngle: 120
+  maxHealth: 100
+  maxEnergy: 100
+  reproductionThreshold: 80
+  reproductionCooldown: 20
+  hatchDuration: 10
+  energyLossK: 1
+  foodEnergyConvertRate: 10
+  seekFoodThresholdNormalized: 0.9
+  sameSpeciesHuntThresholdNormalized: 0.2
+  reproductionCostNormalized: 0.2
+  attackDamage: 10
+  attackEnergyCostNormalized: 0.05
+  attackRangePerSize: 0.5
+  attackInterval: 1
+  mutationChance: 0.15
+  mutationPercent: 0.1
+  evolutionWeights:
+    dietHabit: 1
+    bodySize: 1
+    moveSpeed: 1
+    turnSpeed: 1
+    visionRange: 1
+    maxHealth: 1
+    maxEnergy: 1
+    reproductionThreshold: 1
+    reproductionCooldown: 1
+    hatchDuration: 1
+    attackEnergyCostNormalized: 1
+    attackDamage: 1
+  evolutionThreshold: 3

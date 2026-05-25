@@ -7,8 +7,8 @@ TagManager:
   - Ground
   - Water
   - Tree
-  - Grass
-  - Meat
+  - grass
+  - meat
   layers:
   - Default
   - TransparentFX
@@ -18,9 +18,9 @@ TagManager:
   - UI
   - Ground
   - Tree
-  - Grass
-  - Meat
-  - 
+  - grass
+  - meat
+  - Animal
   - 
   - 
   - 
