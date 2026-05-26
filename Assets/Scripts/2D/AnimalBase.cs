@@ -28,6 +28,7 @@ public class AnimalBase : MonoBehaviour
     [SerializeField] protected GameObject meatDropPrefab;
     [SerializeField] protected float maxSingleMeatAmount = 30f;
     [SerializeField] protected float meatDropScatterRadius = 0.35f;
+    [SerializeField] protected float huntMoveSpeedBonus = 0.5f;
 
     [Header("Detection")]
     [SerializeField] protected LayerMask animalLayer;
@@ -50,6 +51,8 @@ public class AnimalBase : MonoBehaviour
     [SerializeField] protected float nextWanderRetargetTime;
     [SerializeField] protected GameObject currentFoodTarget;
     [SerializeField] protected AnimalBase currentHuntTarget;
+    [SerializeField] protected AnimalBase offspringSourcePrefab;
+    [SerializeField] [Range(0.01f, 1f)] protected float maturityNormalized = 1f;
 
     public StatSetup Setup => statSetup;
     public int SpeciesID => statSetup != null ? statSetup.speciesID : -1;
@@ -58,8 +61,10 @@ public class AnimalBase : MonoBehaviour
     public float MaxHealth => statSetup != null ? statSetup.maxHealth : 0f;
     public float MaxEnergy => statSetup != null ? statSetup.maxEnergy : 0f;
     public float VisionRange => statSetup != null ? statSetup.visionRange : 0f;
-    public float AttackRange => statSetup != null ? statSetup.GetAttackRange() : 0f;
+    public float AttackRange => statSetup != null ? Mathf.Max(0.01f, GetCurrentBodySize() * statSetup.attackRangePerSize) : 0f;
     public float NormalizedEnergy => MaxEnergy <= 0f ? 0f : currentEnergy / MaxEnergy;
+    public float MaturityNormalized => maturityNormalized;
+    public bool IsMature => maturityNormalized >= 1f;
     public bool IsDead => currentState == AnimalState.Dead;
     public bool IsHoldingFood => carriedFood != null;
 
@@ -87,6 +92,7 @@ public class AnimalBase : MonoBehaviour
             return;
         }
 
+        TickMaturity(Time.deltaTime);
         HandleBehaviour(Time.deltaTime);
         SyncVisuals();
     }
@@ -98,12 +104,14 @@ public class AnimalBase : MonoBehaviour
             return;
         }
 
+        RegisterSpeciesSetup();
         currentHealth = statSetup.maxHealth;
         currentEnergy = statSetup.maxEnergy;
         currentState = AnimalState.Wander;
         carriedFood = null;
         currentFoodTarget = null;
         currentHuntTarget = null;
+        maturityNormalized = 1f;
         lastAttackTime = float.NegativeInfinity;
         lastReproductionTime = float.NegativeInfinity;
         PickNewWanderDirection(true);
@@ -114,6 +122,20 @@ public class AnimalBase : MonoBehaviour
     {
         statSetup = setup;
         InitializeFromSetup();
+    }
+
+    public virtual void InitializeFromSetup(StatSetup setup, AnimalBase sourcePrefab)
+    {
+        offspringSourcePrefab = sourcePrefab;
+        InitializeFromSetup(setup);
+    }
+
+    public virtual void InitializeAsOffspring(StatSetup setup, AnimalBase sourcePrefab)
+    {
+        InitializeFromSetup(setup, sourcePrefab);
+        currentState = AnimalState.Hatch;
+        maturityNormalized = setup != null ? setup.newbornMaturityNormalized : 0.05f;
+        SyncVisuals();
     }
 
     protected virtual void CacheReferences()
@@ -148,17 +170,22 @@ public class AnimalBase : MonoBehaviour
             return;
         }
 
+        if (TryHandleReproduction())
+        {
+            return;
+        }
+
         if (CanSeekFood())
         {
             if (DietType == DietType.Carnivore)
             {
-                if (TryHandleHunt(deltaTime))
-                { 
+                if (TryHandleFoodSearch(deltaTime))
+                {
                     return;
                 }
 
-                if (TryHandleFoodSearch(deltaTime))
-                {
+                if (TryHandleHunt(deltaTime))
+                { 
                     return;
                 }
             }
@@ -194,6 +221,16 @@ public class AnimalBase : MonoBehaviour
         SpendEnergy(statSetup.GetPassiveEnergyCostPerSecond() * deltaTime);
     }
 
+    protected virtual void TickMaturity(float deltaTime)
+    {
+        if (statSetup == null || IsMature)
+        {
+            return;
+        }
+
+        maturityNormalized = Mathf.Min(1f, maturityNormalized + statSetup.maturityGrowthPerSecond * deltaTime);
+    }
+
     public virtual bool CanSeekFood()
     {
         return statSetup != null && !IsDead && currentEnergy < MaxEnergy * statSetup.seekFoodThresholdNormalized;
@@ -207,6 +244,11 @@ public class AnimalBase : MonoBehaviour
         }
 
         if (Time.time < lastReproductionTime + statSetup.reproductionCooldown)
+        {
+            return false;
+        }
+
+        if (!IsMature)
         {
             return false;
         }
@@ -251,7 +293,7 @@ public class AnimalBase : MonoBehaviour
             return false;
         }
 
-        if (DietType == DietType.Herbivore && other.DietType == DietType.Carnivore)
+        if (DietType == DietType.Herbivore && (other.DietType == DietType.Carnivore || other.DietType == DietType.Omnivore))
         {
             return true;
         }
@@ -437,9 +479,9 @@ public class AnimalBase : MonoBehaviour
             if (animal != null && animal != this)
             {
                 animals.Add(animal);
-            }
+            } 
         }
-
+         
         return animals;
     }
 
@@ -503,7 +545,7 @@ public class AnimalBase : MonoBehaviour
 
         if (statSetup != null)
         {
-            transform.localScale = Vector3.one * statSetup.bodySize;
+            transform.localScale = Vector3.one * GetCurrentBodySize();
         }
     }
 
@@ -664,7 +706,7 @@ public class AnimalBase : MonoBehaviour
 
     protected virtual float GetPickupRange()
     {
-        return Mathf.Max(0.2f, statSetup.bodySize * pickupRangeMultiplier);
+        return Mathf.Max(0.2f, GetCurrentBodySize() * pickupRangeMultiplier);
     }
 
     protected virtual bool IsValidFoodTarget(GameObject foodObject)
@@ -675,6 +717,28 @@ public class AnimalBase : MonoBehaviour
     protected virtual bool IsValidHuntTarget(AnimalBase target)
     {
         return target != null && CanHuntTarget(target) && IsInFoodView(target.transform.position);
+    }
+
+    protected virtual bool TryHandleReproduction()
+    {
+        if (!CanReproduce() || IsHoldingFood)
+        {
+            return false;
+        }
+
+        AnimalGeneSnapshot offspringGenes = BuildOffspringGenes();
+        if (!SpendEnergy(statSetup.GetReproductionCost()))
+        {
+            return true;
+        }
+
+        lastReproductionTime = Time.time;
+        currentState = AnimalState.Reproduce;
+        currentFoodTarget = null;
+        currentHuntTarget = null;
+        SpawnEgg(offspringGenes);
+        PickNewWanderDirection(true);
+        return true;
     }
 
     protected virtual bool TryHandleEscape(float deltaTime)
@@ -743,7 +807,7 @@ public class AnimalBase : MonoBehaviour
         }
         else
         {
-            MoveTowards(currentHuntTarget.transform.position, statSetup.moveSpeed, deltaTime);
+            MoveTowards(currentHuntTarget.transform.position, GetCurrentMoveSpeed(), deltaTime);
         }
 
         return true;
@@ -810,9 +874,12 @@ public class AnimalBase : MonoBehaviour
         }
 
         List<AnimalBase> nearbyAnimals = ScanNearbyAnimals();
-        AnimalBase nearestThreat = null;
-        float nearestDistance = float.MaxValue;
-        float totalThreatHealth = 0f;
+        AnimalBase nearestCarnivore = null;
+        float nearestCarnivoreDistance = float.MaxValue;
+        float totalCarnivoreHealth = 0f;
+        AnimalBase nearestOmnivore = null;
+        float nearestOmnivoreDistance = float.MaxValue;
+        int omnivoreCount = 0;
 
         for (int i = 0; i < nearbyAnimals.Count; i++)
         {
@@ -822,22 +889,38 @@ public class AnimalBase : MonoBehaviour
                 continue;
             }
 
-            totalThreatHealth += candidate.MaxHealth;
-
             float distance = ((Vector2)candidate.transform.position - (Vector2)transform.position).sqrMagnitude;
-            if (distance < nearestDistance)
+            if (candidate.DietType == DietType.Carnivore)
             {
-                nearestDistance = distance;
-                nearestThreat = candidate;
+                totalCarnivoreHealth += candidate.MaxHealth;
+                if (distance < nearestCarnivoreDistance)
+                {
+                    nearestCarnivoreDistance = distance;
+                    nearestCarnivore = candidate;
+                }
+            }
+            else if (candidate.DietType == DietType.Omnivore)
+            {
+                omnivoreCount++;
+                if (distance < nearestOmnivoreDistance)
+                {
+                    nearestOmnivoreDistance = distance;
+                    nearestOmnivore = candidate;
+                }
             }
         }
 
-        if (nearestThreat == null)
+        if (nearestCarnivore != null && totalCarnivoreHealth >= MaxHealth * 0.5f)
         {
-            return null;
+            return nearestCarnivore;
         }
 
-        return totalThreatHealth >= MaxHealth * 0.5f ? nearestThreat : null;
+        if (nearestOmnivore != null && omnivoreCount >= 3)
+        {
+            return nearestOmnivore;
+        }
+
+        return null;
     }
 
     protected virtual void ConsumeCarriedFood(float deltaTime)
@@ -926,5 +1009,79 @@ public class AnimalBase : MonoBehaviour
         float angle = angleStep * index;
         Vector2 offset = Quaternion.Euler(0f, 0f, angle) * Vector2.right * meatDropScatterRadius;
         return offset;
+    }
+
+    protected virtual void SpawnEgg(AnimalGeneSnapshot offspringGenes)
+    {
+        GameObject eggObject = CreateEggObject();
+        if (eggObject == null)
+        {
+            return;
+        }
+
+        EggBase egg = eggObject.GetComponent<EggBase>();
+        if (egg == null)
+        {
+            egg = eggObject.AddComponent<EggBase>();
+        }
+
+        egg.Initialize(statSetup, offspringGenes, ResolveOffspringPrefab());
+    }
+
+    protected virtual GameObject CreateEggObject()
+    {
+        Vector3 spawnPosition = transform.position + (Vector3)(GetViewDirection().normalized * Mathf.Max(0.25f, statSetup.bodySize * 0.5f));
+        if (statSetup != null && statSetup.eggPrefab != null)
+        {
+            return Instantiate(statSetup.eggPrefab, spawnPosition, Quaternion.identity);
+        }
+
+        GameObject eggObject = new GameObject(string.Format("{0} Egg", statSetup != null ? statSetup.speciesName : "Animal"));
+        eggObject.transform.position = spawnPosition;
+        return eggObject;
+    }
+
+    protected virtual AnimalBase ResolveOffspringPrefab()
+    {
+        if (offspringSourcePrefab != null)
+        {
+            return offspringSourcePrefab;
+        }
+
+        if (statSetup != null && statSetup.animalPrefab != null)
+        {
+            return statSetup.animalPrefab;
+        }
+
+        return null;
+    }
+
+    protected virtual float GetCurrentMoveSpeed()
+    {
+        float baseSpeed = statSetup != null ? statSetup.moveSpeed : 0f;
+        if (currentState == AnimalState.Hunt)
+        {
+            return baseSpeed + huntMoveSpeedBonus;
+        }
+
+        return baseSpeed;
+    }
+
+    protected virtual float GetCurrentBodySize()
+    {
+        if (statSetup == null)
+        {
+            return 0f;
+        }
+
+        return statSetup.bodySize * Mathf.Clamp01(maturityNormalized);
+    }
+
+    protected virtual void RegisterSpeciesSetup()
+    {
+        if (statSetup != null)
+        {
+            SpeciesRegistry.Instance.RegisterSpecies(statSetup);
+        }
     }
 }

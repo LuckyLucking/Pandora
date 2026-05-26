@@ -256,6 +256,8 @@ MonoBehaviour:
   meatChance: 1
   grassAmount: []
   grassGenerateTimer: 10
+  grassGenerateInterval: 10
+  grassGenerateAmount: 5
   meatAmount: []
   meatResolveTimer: 10
   animalSpawnEntries:

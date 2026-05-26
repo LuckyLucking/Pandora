@@ -48,6 +48,10 @@ public class StatSetup : ScriptableObject
     public int speciesID;
     public string speciesName = "New Species";
 
+    [Header("Prefabs")]
+    public AnimalBase animalPrefab;
+    public GameObject eggPrefab;
+
     [Header("Diet")]
     [Range(0f, 1f)] public float dietHabit = 0.5f;
 
@@ -57,6 +61,10 @@ public class StatSetup : ScriptableObject
     [Min(0f)] public float turnSpeed = 360f;
     [Min(0.1f)] public float visionRange = 5f;
     [Range(1f, 360f)] public float foodSearchAngle = 120f;
+
+    [Header("Growth")]
+    [Range(0.01f, 1f)] public float newbornMaturityNormalized = 0.05f;
+    [Min(0f)] public float maturityGrowthPerSecond = 0.05f;
 
     [Header("Life")]
     [Min(0.1f)] public float maxHealth = 100f;
@@ -167,6 +175,47 @@ public class StatSetup : ScriptableObject
         return genes;
     }
 
+    public void ApplyGenes(AnimalGeneSnapshot genes)
+    {
+        dietHabit = Mathf.Clamp01(genes.dietHabit);
+        bodySize = Mathf.Max(0.01f, genes.bodySize);
+        moveSpeed = Mathf.Max(0f, genes.moveSpeed);
+        turnSpeed = Mathf.Max(0f, genes.turnSpeed);
+        visionRange = Mathf.Max(0.1f, genes.visionRange);
+        maxHealth = Mathf.Max(0.1f, genes.maxHealth);
+        maxEnergy = Mathf.Max(0.1f, genes.maxEnergy);
+        reproductionThreshold = Mathf.Clamp(genes.reproductionThreshold, 0f, maxEnergy);
+        reproductionCooldown = Mathf.Max(0f, genes.reproductionCooldown);
+        hatchDuration = Mathf.Max(0f, genes.hatchDuration);
+        attackEnergyCostNormalized = Mathf.Clamp01(genes.attackEnergyCostNormalized);
+        attackDamage = Mathf.Max(0f, genes.attackDamage);
+    }
+
+    public void CopyNonGeneSettingsFrom(StatSetup source)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        animalPrefab = source.animalPrefab;
+        eggPrefab = source.eggPrefab;
+        foodSearchAngle = source.foodSearchAngle;
+        newbornMaturityNormalized = source.newbornMaturityNormalized;
+        maturityGrowthPerSecond = source.maturityGrowthPerSecond;
+        energyLossK = source.energyLossK;
+        foodEnergyConvertRate = source.foodEnergyConvertRate;
+        seekFoodThresholdNormalized = source.seekFoodThresholdNormalized;
+        sameSpeciesHuntThresholdNormalized = source.sameSpeciesHuntThresholdNormalized;
+        reproductionCostNormalized = source.reproductionCostNormalized;
+        attackRangePerSize = source.attackRangePerSize;
+        attackInterval = source.attackInterval;
+        mutationChance = source.mutationChance;
+        mutationPercent = source.mutationPercent;
+        evolutionThreshold = source.evolutionThreshold;
+        evolutionWeights = CloneWeights(source.evolutionWeights);
+    }
+
     public float EvaluateDifferenceScore(StatSetup other)
     {
         if (other == null)
@@ -241,12 +290,38 @@ public class StatSetup : ScriptableObject
         return Mathf.Abs(target - source) / baseline * weight;
     }
 
+    private static EvolutionScoreWeights CloneWeights(EvolutionScoreWeights source)
+    {
+        if (source == null)
+        {
+            return new EvolutionScoreWeights();
+        }
+
+        return new EvolutionScoreWeights
+        {
+            dietHabit = source.dietHabit,
+            bodySize = source.bodySize,
+            moveSpeed = source.moveSpeed,
+            turnSpeed = source.turnSpeed,
+            visionRange = source.visionRange,
+            maxHealth = source.maxHealth,
+            maxEnergy = source.maxEnergy,
+            reproductionThreshold = source.reproductionThreshold,
+            reproductionCooldown = source.reproductionCooldown,
+            hatchDuration = source.hatchDuration,
+            attackEnergyCostNormalized = source.attackEnergyCostNormalized,
+            attackDamage = source.attackDamage
+        };
+    }
+
     private void OnValidate()
     {
         bodySize = Mathf.Max(0.01f, bodySize);
         moveSpeed = Mathf.Max(0f, moveSpeed);
         turnSpeed = Mathf.Max(0f, turnSpeed);
         visionRange = Mathf.Max(0.1f, visionRange);
+        newbornMaturityNormalized = Mathf.Clamp(newbornMaturityNormalized, 0.01f, 1f);
+        maturityGrowthPerSecond = Mathf.Max(0f, maturityGrowthPerSecond);
         maxHealth = Mathf.Max(0.1f, maxHealth);
         maxEnergy = Mathf.Max(0.1f, maxEnergy);
         reproductionThreshold = Mathf.Clamp(reproductionThreshold, 0f, maxEnergy);

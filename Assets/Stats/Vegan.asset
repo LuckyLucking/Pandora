@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a42e2a3e83b3c4419352c926a9dab28, type: 3}
   m_Name: Vegan
   m_EditorClassIdentifier: 
-  speciesID: 0
+  speciesID: 1
   speciesName: Vegan
+  animalPrefab: {fileID: 5311424067852727270, guid: 2cb892ef8dd88e840a39cf30a648605d, type: 3}
+  eggPrefab: {fileID: 2639842160716967026, guid: 24321ad9e0ffea046b6a7a3f1c4ccc50, type: 3}
   dietHabit: 1
   bodySize: 1.3
   moveSpeed: 6

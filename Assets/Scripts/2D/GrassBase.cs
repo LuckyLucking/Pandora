@@ -42,7 +42,7 @@ public class GrassBase : MonoBehaviour
     {
         if (grassMaxAmount <= 0f)
         {
-            return 0f;
+            return 0f; 
         }
 
         return Mathf.Clamp01(grassCurrentAmount / grassMaxAmount);

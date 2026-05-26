@@ -105,14 +105,26 @@ public class PandoraGenerator : MonoBehaviour
     }
     private void GenerateBorder(int x, int y)
     {
-        if(x == 0)
+        if (x == 0)
+        {
             Instantiate(treeSp, new Vector3(x -0.5f,y+0.5f ), treeSp.transform.rotation, transform);
-        if (x==width -1)
+            Instantiate(treeSp, new Vector3(x -1.5f,y+0.5f ), treeSp.transform.rotation, transform);
+        }
+        if (x == width - 1)
+        {
             Instantiate(treeSp, new Vector3(x + 1.5f,y+0.5f), treeSp.transform.rotation, transform);
+            Instantiate(treeSp, new Vector3(x + 2.5f,y+0.5f), treeSp.transform.rotation, transform);
+        }
         if (y == 0)
+        {
             Instantiate(treeSp, new Vector3(x+0.5f,y -0.5f), treeSp.transform.rotation, transform);
-        if (y==height -1)
+            Instantiate(treeSp, new Vector3(x+0.5f,y -1.5f), treeSp.transform.rotation, transform);
+        }
+        if (y == height - 1)
+        {
             Instantiate(treeSp, new Vector3(x +0.5f,y + 1.5f), treeSp.transform.rotation, transform);
+            Instantiate(treeSp, new Vector3(x +0.5f,y + 2.5f), treeSp.transform.rotation, transform);
+        }
 
     }
     private void GenerateGround(int x, int y)
@@ -185,7 +197,7 @@ public class PandoraGenerator : MonoBehaviour
 
             Vector3 spawnPosition = new Vector3(x + 0.5f, y + 0.5f, 0f);
             AnimalBase animal = Instantiate(entry.animalPrefab, spawnPosition, entry.animalPrefab.transform.rotation, transform);
-            animal.InitializeFromSetup(entry.statSetup);
+            animal.InitializeFromSetup(entry.statSetup, entry.animalPrefab);
             animalAmount.Add(animal);
             isTaken[x, y] = true;
             return true;

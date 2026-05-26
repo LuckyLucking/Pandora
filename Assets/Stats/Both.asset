@@ -14,12 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speciesID: 2
   speciesName: Both
+  animalPrefab: {fileID: 528378252862679378, guid: 26766e19c6aabab4a95398e2fa54146a, type: 3}
+  eggPrefab: {fileID: 2639842160716967026, guid: 24321ad9e0ffea046b6a7a3f1c4ccc50, type: 3}
   dietHabit: 0.5
   bodySize: 1
-  moveSpeed: 4
+  moveSpeed: 6
   turnSpeed: 360
   visionRange: 5
   foodSearchAngle: 120
+  newbornMaturityNormalized: 0.05
+  maturityGrowthPerSecond: 0.05
   maxHealth: 100
   maxEnergy: 100
   reproductionThreshold: 80
