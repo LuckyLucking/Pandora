@@ -30,6 +30,8 @@ public class PandoraGenerator : MonoBehaviour
     [Header("Resources")]
     public List<GrassBase> grassAmount;
     public float grassGenerateTimer = 10f;
+    public float grassGenerateInterval = 10f;
+    public int grassGenerateAmount = 5;
     public List<MeatBase> meatAmount;
     public float meatResolveTimer = 10f;
 
@@ -50,6 +52,26 @@ public class PandoraGenerator : MonoBehaviour
 
         GenerateTerrain();
         GenerateAnimals();
+        grassGenerateTimer = grassGenerateInterval;
+    }
+    private void Update()
+    {
+        grassGenerateTimer -= Time.deltaTime;
+        if (grassGenerateTimer <= 0)
+        {
+            int i = 0;
+            while (i < grassGenerateAmount)
+            {
+                int x = Random.Range(0, width - 1);
+                int y = Random.Range(0, height - 1);
+                if (isTaken[x, y] == false)
+                {
+                    GenerateGrass(x,y);
+                    i++;
+                }
+            }
+            grassGenerateTimer = grassGenerateInterval;
+        }
     }
     private void GenerateTerrain()
     {
@@ -69,8 +91,8 @@ public class PandoraGenerator : MonoBehaviour
         //if (tChance <= treeChance && isTaken[x, y] == false)
         //    GenerateTree(x, y);
 
-        if (isTaken[x, y] == false)
-            GenerateGround(x, y);
+        //if (isTaken[x, y] == false)
+        //    GenerateGround(x, y);
 
         int gChance = Random.Range(0, 100);
 

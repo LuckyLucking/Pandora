@@ -49,6 +49,7 @@ public class AnimalBase : MonoBehaviour
     [SerializeField] protected float wanderRetargetMaxTime = 3f;
     [SerializeField] protected float nextWanderRetargetTime;
     [SerializeField] protected GameObject currentFoodTarget;
+    [SerializeField] protected AnimalBase currentHuntTarget;
 
     public StatSetup Setup => statSetup;
     public int SpeciesID => statSetup != null ? statSetup.speciesID : -1;
@@ -102,6 +103,7 @@ public class AnimalBase : MonoBehaviour
         currentState = AnimalState.Wander;
         carriedFood = null;
         currentFoodTarget = null;
+        currentHuntTarget = null;
         lastAttackTime = float.NegativeInfinity;
         lastReproductionTime = float.NegativeInfinity;
         PickNewWanderDirection(true);
@@ -129,16 +131,8 @@ public class AnimalBase : MonoBehaviour
 
     protected virtual void HandleBehaviour(float deltaTime)
     {
-        AnimalBase threat = FindNearestThreat();
-        if (threat != null)
+        if (TryHandleEscape(deltaTime))
         {
-            currentState = AnimalState.Escape;
-            if (IsHoldingFood)
-            {
-                ReleaseFood();
-            }
-
-            MoveAwayFrom(threat.transform.position, statSetup.moveSpeed, deltaTime);
             return;
         }
 
@@ -156,27 +150,41 @@ public class AnimalBase : MonoBehaviour
 
         if (CanSeekFood())
         {
-            if (!IsValidFoodTarget(currentFoodTarget))
+            if (DietType == DietType.Carnivore)
             {
-                currentFoodTarget = FindBestFoodTarget();
-            }
-
-            if (currentFoodTarget != null)
-            {
-                currentState = AnimalState.SearchFood;
-                MoveTowards(currentFoodTarget.transform.position, statSetup.moveSpeed, deltaTime);
-
-                if (Vector2.Distance(transform.position, currentFoodTarget.transform.position) <= GetPickupRange())
-                {
-                    TryPickFood(currentFoodTarget);
-                    currentFoodTarget = null;
+                if (TryHandleHunt(deltaTime))
+                { 
+                    return;
                 }
 
-                return;
+                if (TryHandleFoodSearch(deltaTime))
+                {
+                    return;
+                }
+            }
+            else if (DietType == DietType.Omnivore)
+            {
+                if (TryHandleFoodSearch(deltaTime))
+                {
+                    return;
+                }
+
+                if (TryHandleHunt(deltaTime))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (TryHandleFoodSearch(deltaTime))
+                {
+                    return;
+                }
             }
         }
 
         currentFoodTarget = null;
+        currentHuntTarget = null;
         currentState = AnimalState.Wander;
         Wander(1f, deltaTime);
     }
@@ -243,7 +251,7 @@ public class AnimalBase : MonoBehaviour
             return false;
         }
 
-        if (DietType == DietType.Herbivore && (other.DietType == DietType.Carnivore || other.DietType == DietType.Omnivore))
+        if (DietType == DietType.Herbivore && other.DietType == DietType.Carnivore)
         {
             return true;
         }
@@ -510,6 +518,8 @@ public class AnimalBase : MonoBehaviour
         currentEnergy = 0f;
         currentState = AnimalState.Dead;
         ReleaseFood();
+        currentFoodTarget = null;
+        currentHuntTarget = null;
         SpawnDeathDrop();
         OnDeath();
 
@@ -662,6 +672,83 @@ public class AnimalBase : MonoBehaviour
         return foodObject != null && CanEatFood(foodObject) && HasFoodAmount(foodObject);
     }
 
+    protected virtual bool IsValidHuntTarget(AnimalBase target)
+    {
+        return target != null && CanHuntTarget(target) && IsInFoodView(target.transform.position);
+    }
+
+    protected virtual bool TryHandleEscape(float deltaTime)
+    {
+        AnimalBase threat = FindPriorityThreat();
+        if (threat == null)
+        {
+            return false;
+        }
+
+        currentState = AnimalState.Escape;
+        currentFoodTarget = null;
+        currentHuntTarget = null;
+        if (IsHoldingFood)
+        {
+            ReleaseFood();
+        }
+
+        MoveAwayFrom(threat.transform.position, statSetup.moveSpeed, deltaTime);
+        return true;
+    }
+
+    protected virtual bool TryHandleFoodSearch(float deltaTime)
+    {
+        if (!IsValidFoodTarget(currentFoodTarget))
+        {
+            currentFoodTarget = FindBestFoodTarget();
+        }
+
+        if (currentFoodTarget == null)
+        {
+            return false;
+        }
+
+        currentHuntTarget = null;
+        currentState = AnimalState.SearchFood;
+        MoveTowards(currentFoodTarget.transform.position, statSetup.moveSpeed, deltaTime);
+
+        if (Vector2.Distance(transform.position, currentFoodTarget.transform.position) <= GetPickupRange())
+        {
+            TryPickFood(currentFoodTarget);
+            currentFoodTarget = null;
+        }
+
+        return true;
+    }
+
+    protected virtual bool TryHandleHunt(float deltaTime)
+    {
+        if (!IsValidHuntTarget(currentHuntTarget))
+        {
+            currentHuntTarget = FindBestHuntTarget();
+        }
+
+        if (currentHuntTarget == null)
+        {
+            return false;
+        }
+
+        currentFoodTarget = null;
+        currentState = AnimalState.Hunt;
+        float distanceToTarget = Vector2.Distance(transform.position, currentHuntTarget.transform.position);
+        if (distanceToTarget <= AttackRange)
+        {
+            TryAttack(currentHuntTarget);
+        }
+        else
+        {
+            MoveTowards(currentHuntTarget.transform.position, statSetup.moveSpeed, deltaTime);
+        }
+
+        return true;
+    }
+
     protected virtual GameObject FindBestFoodTarget()
     {
         List<GameObject> visibleFoods = ScanVisibleFoods();
@@ -690,11 +777,42 @@ public class AnimalBase : MonoBehaviour
         return bestFood;
     }
 
-    protected virtual AnimalBase FindNearestThreat()
+    protected virtual AnimalBase FindBestHuntTarget()
     {
+        List<AnimalBase> nearbyAnimals = ScanNearbyAnimals();
+        AnimalBase bestTarget = null;
+        float bestDistance = float.MaxValue;
+
+        for (int i = 0; i < nearbyAnimals.Count; i++)
+        {
+            AnimalBase candidate = nearbyAnimals[i];
+            if (!IsValidHuntTarget(candidate))
+            {
+                continue;
+            }
+
+            float distance = ((Vector2)candidate.transform.position - (Vector2)transform.position).sqrMagnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestTarget = candidate;
+            }
+        }
+
+        return bestTarget;
+    }
+
+    protected virtual AnimalBase FindPriorityThreat()
+    {
+        if (DietType != DietType.Herbivore)
+        {
+            return null;
+        }
+
         List<AnimalBase> nearbyAnimals = ScanNearbyAnimals();
         AnimalBase nearestThreat = null;
         float nearestDistance = float.MaxValue;
+        float totalThreatHealth = 0f;
 
         for (int i = 0; i < nearbyAnimals.Count; i++)
         {
@@ -704,6 +822,8 @@ public class AnimalBase : MonoBehaviour
                 continue;
             }
 
+            totalThreatHealth += candidate.MaxHealth;
+
             float distance = ((Vector2)candidate.transform.position - (Vector2)transform.position).sqrMagnitude;
             if (distance < nearestDistance)
             {
@@ -712,7 +832,12 @@ public class AnimalBase : MonoBehaviour
             }
         }
 
-        return nearestThreat;
+        if (nearestThreat == null)
+        {
+            return null;
+        }
+
+        return totalThreatHealth >= MaxHealth * 0.5f ? nearestThreat : null;
     }
 
     protected virtual void ConsumeCarriedFood(float deltaTime)

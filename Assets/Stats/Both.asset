@@ -10,27 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a42e2a3e83b3c4419352c926a9dab28, type: 3}
-  m_Name: Vegan
+  m_Name: Both
   m_EditorClassIdentifier: 
-  speciesID: 0
-  speciesName: Vegan
-  dietHabit: 1
-  bodySize: 1.3
-  moveSpeed: 6
+  speciesID: 2
+  speciesName: Both
+  dietHabit: 0.5
+  bodySize: 1
+  moveSpeed: 4
   turnSpeed: 360
   visionRange: 5
   foodSearchAngle: 120
-  maxHealth: 300
+  maxHealth: 100
   maxEnergy: 100
   reproductionThreshold: 80
   reproductionCooldown: 20
   hatchDuration: 10
-  energyLossK: 0.6
+  energyLossK: 0.8
   foodEnergyConvertRate: 10
   seekFoodThresholdNormalized: 0.9
   sameSpeciesHuntThresholdNormalized: 0.2
   reproductionCostNormalized: 0.2
-  attackDamage: 10
+  attackDamage: 30
   attackEnergyCostNormalized: 0.05
   attackRangePerSize: 3
   attackInterval: 1

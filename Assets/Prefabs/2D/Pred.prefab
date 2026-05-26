@@ -105,6 +105,8 @@ MonoBehaviour:
   body: {fileID: 4514549771185272364}
   carryAnchor: {fileID: 295865870832252437}
   meatDropPrefab: {fileID: 1115693603179004951, guid: 0f3b4cead6a88bc4f8d7d92681a4fe9c, type: 3}
+  maxSingleMeatAmount: 30
+  meatDropScatterRadius: 1
   animalLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -215,7 +217,7 @@ Transform:
   m_GameObject: {fileID: 8479219775191975226}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.547, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

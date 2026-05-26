@@ -20,19 +20,19 @@ MonoBehaviour:
   turnSpeed: 360
   visionRange: 7
   foodSearchAngle: 180
-  maxHealth: 100
+  maxHealth: 150
   maxEnergy: 100
   reproductionThreshold: 80
   reproductionCooldown: 20
   hatchDuration: 10
-  energyLossK: 1
+  energyLossK: 0.4
   foodEnergyConvertRate: 10
   seekFoodThresholdNormalized: 0.9
   sameSpeciesHuntThresholdNormalized: 0.2
   reproductionCostNormalized: 0.2
-  attackDamage: 20
+  attackDamage: 50
   attackEnergyCostNormalized: 0.05
-  attackRangePerSize: 1
+  attackRangePerSize: 3
   attackInterval: 1
   mutationChance: 0.15
   mutationPercent: 0.1

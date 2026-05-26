@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c23d3c9cda47dd409d0df49899151be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grassMaxAmount: 10
+  grassMaxAmount: 15
   grassCurrentAmount: 0
 --- !u!58 &3490372422108644869
 CircleCollider2D:
