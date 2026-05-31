@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[DisallowMultipleComponent]
 public class PlayerController : MonoBehaviour
 {
     [Header("Camera")]

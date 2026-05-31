@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 880ad317fec14dc1b3d062a60417e83c, type: 3}
+  m_Name: Ecosystem Setup
+  m_EditorClassIdentifier: 
+  ecosystemName: Default Ecosystem
+  width: 100
+  height: 100
+  grassChance: 2
+  meatChance: 1
+  speciesPopulations:
+  - statSetup: {fileID: 11400000, guid: 7284ce2e5d9ed3b4294339b19871d26c, type: 2}
+    spawnCount: 5
+  - statSetup: {fileID: 11400000, guid: 8a5e84f6c8d1f6a44b0e4b9730160d4a, type: 2}
+    spawnCount: 10
+  - statSetup: {fileID: 11400000, guid: ee2eb1e649d28f840932209721fcb7bf, type: 2}
+    spawnCount: 5

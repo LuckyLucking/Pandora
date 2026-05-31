@@ -18,10 +18,12 @@ MonoBehaviour:
   eggPrefab: {fileID: 2639842160716967026, guid: 24321ad9e0ffea046b6a7a3f1c4ccc50, type: 3}
   dietHabit: 0
   bodySize: 0.5
-  moveSpeed: 6.5
+  moveSpeed: 7
   turnSpeed: 360
   visionRange: 7
   foodSearchAngle: 180
+  newbornMaturityNormalized: 0.05
+  maturityGrowthPerSecond: 0.05
   maxHealth: 150
   maxEnergy: 100
   reproductionThreshold: 80

@@ -53,6 +53,10 @@ public class AnimalBase : MonoBehaviour
     [SerializeField] protected AnimalBase currentHuntTarget;
     [SerializeField] protected AnimalBase offspringSourcePrefab;
     [SerializeField] [Range(0.01f, 1f)] protected float maturityNormalized = 1f;
+    [SerializeField] protected bool registeredWithGenerator;
+
+    protected AnimalSpawnEntry sourceSpawnEntry;
+    protected AnimalSpawnEntry registeredSpawnEntry;
 
     public StatSetup Setup => statSetup;
     public int SpeciesID => statSetup != null ? statSetup.speciesID : -1;
@@ -107,35 +111,49 @@ public class AnimalBase : MonoBehaviour
         RegisterSpeciesSetup();
         currentHealth = statSetup.maxHealth;
         currentEnergy = statSetup.maxEnergy;
-        currentState = AnimalState.Wander;
+        currentState = AnimalState.Hatch;
         carriedFood = null;
         currentFoodTarget = null;
         currentHuntTarget = null;
-        maturityNormalized = 1f;
+        maturityNormalized = Mathf.Clamp(statSetup.newbornMaturityNormalized, 0.01f, 1f);
         lastAttackTime = float.NegativeInfinity;
         lastReproductionTime = float.NegativeInfinity;
         PickNewWanderDirection(true);
+        RegisterWithGenerator();
         SyncVisuals();
     }
 
     public virtual void InitializeFromSetup(StatSetup setup)
     {
-        statSetup = setup;
-        InitializeFromSetup();
+        InitializeFromSetup(setup, null, null);
     }
 
     public virtual void InitializeFromSetup(StatSetup setup, AnimalBase sourcePrefab)
     {
+        InitializeFromSetup(setup, null, sourcePrefab);
+    }
+
+    public virtual void InitializeFromSetup(StatSetup setup, AnimalSpawnEntry spawnEntry, AnimalBase sourcePrefab)
+    {
+        if (registeredWithGenerator)
+        {
+            UnregisterFromGenerator();
+        }
+
+        sourceSpawnEntry = spawnEntry;
         offspringSourcePrefab = sourcePrefab;
-        InitializeFromSetup(setup);
+        statSetup = setup;
+        InitializeFromSetup();
     }
 
     public virtual void InitializeAsOffspring(StatSetup setup, AnimalBase sourcePrefab)
     {
-        InitializeFromSetup(setup, sourcePrefab);
-        currentState = AnimalState.Hatch;
-        maturityNormalized = setup != null ? setup.newbornMaturityNormalized : 0.05f;
-        SyncVisuals();
+        InitializeFromSetup(setup, null, sourcePrefab);
+    }
+
+    public virtual void InitializeAsOffspring(StatSetup setup, AnimalSpawnEntry spawnEntry, AnimalBase sourcePrefab)
+    {
+        InitializeFromSetup(setup, spawnEntry, sourcePrefab);
     }
 
     protected virtual void CacheReferences()
@@ -562,6 +580,7 @@ public class AnimalBase : MonoBehaviour
         ReleaseFood();
         currentFoodTarget = null;
         currentHuntTarget = null;
+        UnregisterFromGenerator();
         SpawnDeathDrop();
         OnDeath();
 
@@ -1083,5 +1102,42 @@ public class AnimalBase : MonoBehaviour
         {
             SpeciesRegistry.Instance.RegisterSpecies(statSetup);
         }
+    }
+
+    protected virtual void RegisterWithGenerator()
+    {
+        if (registeredWithGenerator)
+        {
+            return;
+        }
+
+        PandoraGenerator generator = PandoraGenerator.Instance;
+        if (generator != null)
+        {
+            registeredSpawnEntry = generator.RegisterAnimal(this, sourceSpawnEntry);
+            registeredWithGenerator = registeredSpawnEntry != null;
+        }
+    }
+
+    protected virtual void UnregisterFromGenerator()
+    {
+        if (!registeredWithGenerator)
+        {
+            return;
+        }
+
+        PandoraGenerator generator = PandoraGenerator.Instance;
+        if (generator != null)
+        {
+            generator.UnregisterAnimal(this, registeredSpawnEntry);
+        }
+
+        registeredSpawnEntry = null;
+        registeredWithGenerator = false;
+    }
+
+    protected virtual void OnDestroy()
+    {
+        UnregisterFromGenerator();
     }
 }

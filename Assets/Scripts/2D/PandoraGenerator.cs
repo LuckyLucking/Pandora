@@ -8,11 +8,17 @@ public class AnimalSpawnEntry
     public AnimalBase animalPrefab;
     public StatSetup statSetup;
     public int spawnCount = 5;
+    public int currentCount;
 }
 
 public class PandoraGenerator : MonoBehaviour
 {
+    private static PandoraGenerator instance;
+
     public bool[,] isTaken;
+
+    [Header("Ecosystem")]
+    public EcosystemSetup ecosystemSetup;
 
     [Header("Blocks")]
     public int width = 100;
@@ -38,6 +44,34 @@ public class PandoraGenerator : MonoBehaviour
     [Header("Animals")]
     public List<AnimalSpawnEntry> animalSpawnEntries;
     public List<AnimalBase> animalAmount;
+    [SerializeField] private List<AnimalSpawnEntry> runtimeAnimalSpawnEntries;
+
+    public static PandoraGenerator Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<PandoraGenerator>();
+            }
+
+            return instance;
+        }
+    }
+
+    private void Awake()
+    {
+        instance = this;
+        if (animalAmount == null)
+        {
+            animalAmount = new List<AnimalBase>();
+        }
+
+        if (runtimeAnimalSpawnEntries == null)
+        {
+            runtimeAnimalSpawnEntries = new List<AnimalSpawnEntry>();
+        }
+    }
 
     private void Start()
     {
@@ -45,8 +79,12 @@ public class PandoraGenerator : MonoBehaviour
             grassAmount = new List<GrassBase>();
         if (meatAmount == null)
             meatAmount = new List<MeatBase>();
-        if (animalAmount == null)
-            animalAmount = new List<AnimalBase>();
+
+        ApplyEcosystemSetup(ecosystemSetup);
+        if (ecosystemSetup == null)
+        {
+            runtimeAnimalSpawnEntries = CloneSpawnEntries(animalSpawnEntries);
+        }
 
         isTaken = new bool[width, height];
 
@@ -163,14 +201,15 @@ public class PandoraGenerator : MonoBehaviour
 
     private void GenerateAnimals()
     {
-        if (animalSpawnEntries == null)
+        List<AnimalSpawnEntry> activeSpawnEntries = GetActiveSpawnEntries();
+        if (activeSpawnEntries == null)
         {
             return;
         }
 
-        for (int i = 0; i < animalSpawnEntries.Count; i++)
+        for (int i = 0; i < activeSpawnEntries.Count; i++)
         {
-            AnimalSpawnEntry entry = animalSpawnEntries[i];
+            AnimalSpawnEntry entry = activeSpawnEntries[i];
             if (entry == null || entry.animalPrefab == null || entry.statSetup == null || entry.spawnCount <= 0)
             {
                 continue;
@@ -197,12 +236,244 @@ public class PandoraGenerator : MonoBehaviour
 
             Vector3 spawnPosition = new Vector3(x + 0.5f, y + 0.5f, 0f);
             AnimalBase animal = Instantiate(entry.animalPrefab, spawnPosition, entry.animalPrefab.transform.rotation, transform);
-            animal.InitializeFromSetup(entry.statSetup, entry.animalPrefab);
-            animalAmount.Add(animal);
+            animal.InitializeFromSetup(entry.statSetup, entry, entry.animalPrefab);
             isTaken[x, y] = true;
             return true;
         }
 
         return false;
+    }
+
+    private void RebuildAnimalTracking()
+    {
+        if (animalAmount == null)
+        {
+            animalAmount = new List<AnimalBase>();
+        }
+
+        animalAmount.Clear();
+
+        if (runtimeAnimalSpawnEntries != null)
+        {
+            for (int i = 0; i < runtimeAnimalSpawnEntries.Count; i++)
+            {
+                AnimalSpawnEntry entry = runtimeAnimalSpawnEntries[i];
+                if (entry != null)
+                {
+                    entry.currentCount = 0;
+                }
+            }
+        }
+
+        AnimalBase[] animals = FindObjectsOfType<AnimalBase>();
+        for (int i = 0; i < animals.Length; i++)
+        {
+            AnimalBase animal = animals[i];
+            if (animal == null || animal.IsDead || !animal.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            RegisterAnimal(animal);
+        }
+    }
+
+    public void ApplyEcosystemSetup(EcosystemSetup setup)
+    {
+        ecosystemSetup = setup;
+        if (setup == null)
+        {
+            runtimeAnimalSpawnEntries = new List<AnimalSpawnEntry>();
+            return;
+        }
+
+        width = setup.width;
+        height = setup.height;
+        grassChance = setup.grassChance;
+        meatChance = setup.meatChance;
+        runtimeAnimalSpawnEntries = setup.BuildSpawnEntries();
+    }
+
+    private List<AnimalSpawnEntry> GetActiveSpawnEntries()
+    {
+        if (ecosystemSetup != null)
+        {
+            return runtimeAnimalSpawnEntries;
+        }
+
+        return animalSpawnEntries;
+    }
+
+    private List<AnimalSpawnEntry> CloneSpawnEntries(List<AnimalSpawnEntry> source)
+    {
+        List<AnimalSpawnEntry> clonedEntries = new List<AnimalSpawnEntry>();
+        if (source == null)
+        {
+            return clonedEntries;
+        }
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            AnimalSpawnEntry entry = source[i];
+            if (entry == null)
+            {
+                continue;
+            }
+
+            clonedEntries.Add(new AnimalSpawnEntry
+            {
+                animalPrefab = entry.animalPrefab,
+                statSetup = entry.statSetup,
+                spawnCount = entry.spawnCount
+            });
+        }
+
+        return clonedEntries;
+    }
+
+    public AnimalSpawnEntry RegisterAnimal(AnimalBase animal, AnimalSpawnEntry preferredEntry = null)
+    {
+        if (animal == null || animal.Setup == null)
+        {
+            return null;
+        }
+
+        if (animalAmount == null)
+        {
+            animalAmount = new List<AnimalBase>();
+        }
+
+        bool added = false;
+        if (!animalAmount.Contains(animal))
+        {
+            animalAmount.Add(animal);
+            added = true;
+        }
+
+        if (!added)
+        {
+            return FindRuntimeSpawnEntry(animal, preferredEntry);
+        }
+
+        AnimalSpawnEntry runtimeEntry = GetOrCreateRuntimeSpawnEntry(animal, preferredEntry);
+        if (runtimeEntry != null)
+        {
+            runtimeEntry.currentCount = Mathf.Max(0, runtimeEntry.currentCount + 1);
+        }
+
+        return runtimeEntry;
+    } 
+
+    public void UnregisterAnimal(AnimalBase animal, AnimalSpawnEntry preferredEntry = null)
+    {
+        if (animalAmount == null || animal == null)
+        {
+            return;
+        }
+
+        bool removed = animalAmount.Remove(animal);
+        if (!removed)
+        {
+            return;
+        }
+
+        AnimalSpawnEntry runtimeEntry = FindRuntimeSpawnEntry(animal, preferredEntry);
+        if (runtimeEntry != null)
+        {
+            runtimeEntry.currentCount = Mathf.Max(0, runtimeEntry.currentCount - 1);
+        }
+    }
+
+    private AnimalSpawnEntry GetOrCreateRuntimeSpawnEntry(AnimalBase animal, AnimalSpawnEntry preferredEntry = null)
+    {
+        AnimalSpawnEntry entry = FindRuntimeSpawnEntry(animal, preferredEntry);
+        if (entry != null)
+        {
+            return entry;
+        }
+
+        StatSetup setup = animal.Setup;
+        if (setup == null)
+        {
+            return null;
+        }
+
+        entry = new AnimalSpawnEntry
+        {
+            animalPrefab = setup.animalPrefab,
+            statSetup = setup,
+            spawnCount = 0,
+            currentCount = 0
+        };
+
+        if (runtimeAnimalSpawnEntries == null)
+        {
+            runtimeAnimalSpawnEntries = new List<AnimalSpawnEntry>();
+        }
+
+        runtimeAnimalSpawnEntries.Add(entry);
+
+        return entry;
+    }
+
+    private AnimalSpawnEntry FindRuntimeSpawnEntry(AnimalBase animal, AnimalSpawnEntry preferredEntry = null)
+    {
+        if (animal == null || runtimeAnimalSpawnEntries == null)
+        {
+            return null;
+        }
+
+        if (preferredEntry != null)
+        {
+            for (int i = 0; i < runtimeAnimalSpawnEntries.Count; i++)
+            {
+                if (ReferenceEquals(runtimeAnimalSpawnEntries[i], preferredEntry))
+                {
+                    return runtimeAnimalSpawnEntries[i];
+                }
+            }
+
+            if (preferredEntry.statSetup != null)
+            {
+                for (int i = 0; i < runtimeAnimalSpawnEntries.Count; i++)
+                {
+                    AnimalSpawnEntry entry = runtimeAnimalSpawnEntries[i];
+                    if (entry != null && ReferenceEquals(entry.statSetup, preferredEntry.statSetup))
+                    {
+                        return entry;
+                    }
+                }
+            }
+        }
+
+        StatSetup setup = animal.Setup;
+        if (setup != null)
+        {
+            for (int i = 0; i < runtimeAnimalSpawnEntries.Count; i++)
+            {
+                AnimalSpawnEntry entry = runtimeAnimalSpawnEntries[i];
+                if (entry != null && ReferenceEquals(entry.statSetup, setup))
+                {
+                    return entry;
+                }
+            }
+        }
+
+        int speciesID = animal.SpeciesID;
+        for (int i = 0; i < runtimeAnimalSpawnEntries.Count; i++)
+        {
+            AnimalSpawnEntry entry = runtimeAnimalSpawnEntries[i];
+            if (entry == null || entry.statSetup == null)
+            {
+                continue;
+            }
+
+            if (entry.statSetup.speciesID == speciesID)
+            {
+                return entry;
+            }
+        }
+
+        return null;
     }
 }
