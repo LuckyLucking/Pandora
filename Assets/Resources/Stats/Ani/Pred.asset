@@ -35,7 +35,7 @@ MonoBehaviour:
   sameSpeciesHuntThresholdNormalized: 0.2
   reproductionCostNormalized: 0.2
   attackDamage: 50
-  attackEnergyCostNormalized: 0.05
+  attackEnergyCostNormalized: 0
   attackRangePerSize: 3
   attackInterval: 1
   mutationChance: 0.15

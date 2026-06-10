@@ -1,0 +1,40 @@
+fileFormatVersion: 2
+guid: 2220fa5dd852db040a6545f14ccfcc30
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - ecosystemList: {instanceID: 0}
+  - dataBoard: {instanceID: 0}
+  - animalTemplate: {instanceID: 0}
+  - animalPrefab: {instanceID: 0}
+  - eggPrefab: {fileID: 2639842160716967026, guid: 24321ad9e0ffea046b6a7a3f1c4ccc50, type: 3}
+  - animalFileNameInput: {instanceID: 0}
+  - speciesNameInput: {instanceID: 0}
+  - speciesIDInput: {instanceID: 0}
+  - dietHabitInput: {instanceID: 0}
+  - bodySizeInput: {instanceID: 0}
+  - moveSpeedInput: {instanceID: 0}
+  - turnSpeedInput: {instanceID: 0}
+  - visionRangeInput: {instanceID: 0}
+  - maxHealthInput: {instanceID: 0}
+  - maxEnergyInput: {instanceID: 0}
+  - reproductionThresholdInput: {instanceID: 0}
+  - reproductionCooldownInput: {instanceID: 0}
+  - hatchDurationInput: {instanceID: 0}
+  - attackDamageInput: {instanceID: 0}
+  - attackEnergyCostNormalizedInput: {instanceID: 0}
+  - mutationChanceInput: {instanceID: 0}
+  - mutationPercentInput: {instanceID: 0}
+  - ecosystemTemplate: {instanceID: 0}
+  - ecosystemFileNameInput: {instanceID: 0}
+  - ecosystemNameInput: {instanceID: 0}
+  - widthInput: {instanceID: 0}
+  - heightInput: {instanceID: 0}
+  - grassChanceInput: {instanceID: 0}
+  - meatChanceInput: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

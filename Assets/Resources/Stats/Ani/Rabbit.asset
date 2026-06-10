@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a42e2a3e83b3c4419352c926a9dab28, type: 3}
-  m_Name: Both
+  m_Name: Rabbit
   m_EditorClassIdentifier: 
-  speciesID: 2
-  speciesName: Both
+  speciesID: 3
+  speciesName: Rabbit
   animalPrefab: {fileID: 528378252862679378, guid: 26766e19c6aabab4a95398e2fa54146a, type: 3}
   eggPrefab: {fileID: 2639842160716967026, guid: 24321ad9e0ffea046b6a7a3f1c4ccc50, type: 3}
-  dietHabit: 0.5
-  bodySize: 1
+  dietHabit: 1
+  bodySize: 0.4
   moveSpeed: 6
   turnSpeed: 360
   visionRange: 5
@@ -26,19 +26,19 @@ MonoBehaviour:
   maturityGrowthPerSecond: 0.05
   maxHealth: 100
   maxEnergy: 100
-  reproductionThreshold: 80
+  reproductionThreshold: 60
   reproductionCooldown: 20
-  hatchDuration: 10
-  energyLossK: 0.8
+  hatchDuration: 5
+  energyLossK: 1
   foodEnergyConvertRate: 10
   seekFoodThresholdNormalized: 0.9
   sameSpeciesHuntThresholdNormalized: 0.2
   reproductionCostNormalized: 0.2
-  attackDamage: 30
-  attackEnergyCostNormalized: 0
-  attackRangePerSize: 3
+  attackDamage: 10
+  attackEnergyCostNormalized: 0.05
+  attackRangePerSize: 0.5
   attackInterval: 1
-  mutationChance: 0.15
+  mutationChance: 0.3
   mutationPercent: 0.1
   evolutionWeights:
     dietHabit: 1

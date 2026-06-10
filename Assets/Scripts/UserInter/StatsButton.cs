@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class StatsButton : MonoBehaviour
 {
@@ -8,22 +9,60 @@ public class StatsButton : MonoBehaviour
     public EcosystemSetup ecoData;
 
     public DataBoard dataBoard;
+
+    private Button button;
+
+    private void Awake()
+    {
+        button = GetComponent<Button>();
+        if (button != null)
+        {
+            button.onClick.AddListener(OnClick);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (button != null)
+        {
+            button.onClick.RemoveListener(OnClick);
+        }
+    }
+
     public void Init(StatSetup stats)
     {
         aniData = stats;
-        text.text = stats.name;
+        ecoData = null;
+        text.text = string.IsNullOrEmpty(stats.speciesName) ? stats.name : stats.speciesName;
     }
+
     public void Init(EcosystemSetup stats)
     {
         ecoData = stats;
-        text.text = stats.name;
+        aniData = null;
+        text.text = string.IsNullOrEmpty(stats.ecosystemName) ? stats.name : stats.ecosystemName;
+    }
+
+    public void SetDataBoard(DataBoard targetDataBoard)
+    {
+        dataBoard = targetDataBoard;
     }
 
     public void OnClick()
     {
+        if (dataBoard == null)
+        {
+            Debug.LogWarning("StatsButton needs a DataBoard assigned before it can show data.", this);
+            return;
+        }
+
         if (aniData != null)
-            Debug.Log($"Clicked: {aniData.name}");
+        {
+            dataBoard.ShowData(aniData);
+        }
         else if (ecoData != null)
-            Debug.Log($"Clicked: {ecoData.name}");
+        {
+            dataBoard.ShowData(ecoData);
+        }
     }
 }

@@ -132,13 +132,13 @@ public class PandoraGenerator : MonoBehaviour
         //if (isTaken[x, y] == false)
         //    GenerateGround(x, y);
 
-        int gChance = Random.Range(0, 100);
+        int gChance = Random.Range(0, 1000);
 
-        if (gChance <= grassChance && isTaken[x, y] == false)
+        if (gChance <= grassChance*10 && isTaken[x, y] == false)
             GenerateGrass(x, y);
 
-        int mChance = Random.Range(0, 100);
-        if(mChance <= meatChance && isTaken[x, y] == false)
+        int mChance = Random.Range(0, 1000);
+        if(mChance <= meatChance*10 && isTaken[x, y] == false)
             GenerateMeat(x, y);
     }
     private void GenerateBorder(int x, int y)
