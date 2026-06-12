@@ -60,7 +60,7 @@ public class StatSetup : ScriptableObject
     [Min(0f)] public float moveSpeed = 2f;
     [Min(0f)] public float turnSpeed = 360f;
     [Min(0.1f)] public float visionRange = 5f;
-    [Range(1f, 360f)] public float foodSearchAngle = 120f;
+    [Range(1f, 360f)] public float foodSearchAngle = 360f;
 
     [Header("Growth")]
     [Range(0.01f, 1f)] public float newbornMaturityNormalized = 0.05f;
@@ -74,7 +74,7 @@ public class StatSetup : ScriptableObject
     [Min(0f)] public float hatchDuration = 10f;
 
     [Header("Energy Rules")]
-    [Min(0f)] public float energyLossK = 1f;
+    [Min(0f)] public float energyLossK = 0.8f;
     [Min(0f)] public float foodEnergyConvertRate = 10f;
     [Range(0f, 1f)] public float seekFoodThresholdNormalized = 0.9f;
     [Range(0f, 1f)] public float sameSpeciesHuntThresholdNormalized = 0.2f;

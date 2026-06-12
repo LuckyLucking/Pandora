@@ -138,6 +138,7 @@ MonoBehaviour:
   meatDropPrefab: {fileID: 1115693603179004951, guid: 0f3b4cead6a88bc4f8d7d92681a4fe9c, type: 3}
   maxSingleMeatAmount: 30
   meatDropScatterRadius: 1
+  huntMoveSpeedBonus: 0.5
   animalLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -154,13 +155,17 @@ MonoBehaviour:
   lastReproductionTime: -Infinity
   carriedFood: {fileID: 0}
   destroyOnDeath: 1
-  pickupRangeMultiplier: 1
+  pickupRangeMultiplier: 3
   carryMoveSpeedMultiplier: 0.6
   wanderDirection: {x: 1, y: 0}
   wanderRetargetMinTime: 1.5
   wanderRetargetMaxTime: 3
   nextWanderRetargetTime: 0
   currentFoodTarget: {fileID: 0}
+  currentHuntTarget: {fileID: 0}
+  offspringSourcePrefab: {fileID: 0}
+  maturityNormalized: 1
+  registeredWithGenerator: 0
 --- !u!50 &8011866869172243103
 Rigidbody2D:
   serializedVersion: 4

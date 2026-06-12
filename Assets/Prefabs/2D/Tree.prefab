@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5550646236107079575}
   - component: {fileID: 3374686715510250834}
-  - component: {fileID: 8865483451515825055}
+  - component: {fileID: 1109668625006113557}
   m_Layer: 7
   m_Name: Tree
   m_TagString: Tree
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &8865483451515825055
+--- !u!61 &1109668625006113557
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

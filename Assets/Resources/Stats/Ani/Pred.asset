@@ -21,7 +21,7 @@ MonoBehaviour:
   moveSpeed: 7
   turnSpeed: 360
   visionRange: 7
-  foodSearchAngle: 180
+  foodSearchAngle: 360
   newbornMaturityNormalized: 0.05
   maturityGrowthPerSecond: 0.05
   maxHealth: 150

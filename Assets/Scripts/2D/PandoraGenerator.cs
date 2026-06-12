@@ -62,6 +62,13 @@ public class PandoraGenerator : MonoBehaviour
     private void Awake()
     {
         instance = this;
+
+        EcosystemSetup selectedEcosystem = EcosystemLoadContext.ConsumeSelectedEcosystem();
+        if (selectedEcosystem != null)
+        {
+            ecosystemSetup = selectedEcosystem;
+        }
+
         if (animalAmount == null)
         {
             animalAmount = new List<AnimalBase>();

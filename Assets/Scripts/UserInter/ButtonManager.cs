@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UserEcosystemSwitchButton : MonoBehaviour
+public class ButtonManager : MonoBehaviour
 {
     public Transform EcosystemCanvas;
     public Transform UserInterCanvas;
     public Transform ContinueCanvas;
     public Transform AnimalCreateCanvas;
     public Transform EcosystemCreateCanvas;
+    public Transform AddAnimalCanvas;
     private void Start()
     {
         EcosystemCanvas.gameObject.SetActive(false);
@@ -16,6 +17,7 @@ public class UserEcosystemSwitchButton : MonoBehaviour
         ContinueCanvas.gameObject.SetActive(false);
         AnimalCreateCanvas.gameObject.SetActive(false);
         EcosystemCreateCanvas.gameObject.SetActive(false);
+        AddAnimalCanvas.gameObject.SetActive(false);
     }
 
     public void User2Eco()
@@ -55,5 +57,13 @@ public class UserEcosystemSwitchButton : MonoBehaviour
     {
         AnimalCreateCanvas.gameObject.SetActive(false);
         EcosystemCreateCanvas.gameObject.SetActive(false);
+    }
+    public void OpenAnimalAdding()
+    {
+        AddAnimalCanvas.gameObject.SetActive(true);
+    }
+    public void CloseAnimalAdding()
+    {
+        AddAnimalCanvas.gameObject.SetActive(false);
     }
 }

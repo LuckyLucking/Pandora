@@ -47,10 +47,19 @@ public class StatsAssetCreator : MonoBehaviour
     public TMP_InputField attackEnergyCostNormalizedInput;
     public TMP_InputField mutationChanceInput;
     public TMP_InputField mutationPercentInput;
+    public TMP_InputField energyLoss;
 
     [Header("Ecosystem References")]
     public EcosystemSetup ecosystemTemplate;
     public List<SpeciesPopulationSetup> speciesPopulations = new List<SpeciesPopulationSetup>();
+
+    [Header("Ecosystem Species UI")]
+    public SpeciesPopulationRow speciesPopulationRowPrefab;
+    public Transform speciesPopulationContent;
+    public bool clearPopulationRowsAfterSave = true;
+
+    private readonly List<SpeciesPopulationRow> speciesPopulationRows = new List<SpeciesPopulationRow>();
+    private readonly List<StatSetup> availableSpecies = new List<StatSetup>();
 
     [Header("Ecosystem Inputs")]
     public TMP_InputField ecosystemFileNameInput;
@@ -87,6 +96,11 @@ public class StatsAssetCreator : MonoBehaviour
         }
 
         AfterSaveEcosystem(savedSetup);
+
+        if (clearPopulationRowsAfterSave)
+        {
+            ClearSpeciesPopulationRows();
+        }
     }
 
     public StatSetup CreateAnimalFromInputs()
@@ -115,12 +129,15 @@ public class StatsAssetCreator : MonoBehaviour
         setup.attackEnergyCostNormalized = Mathf.Clamp01(ReadFloat(attackEnergyCostNormalizedInput, setup.attackEnergyCostNormalized));
         setup.mutationChance = Mathf.Clamp01(ReadFloat(mutationChanceInput, setup.mutationChance));
         setup.mutationPercent = Mathf.Clamp01(ReadFloat(mutationPercentInput, setup.mutationPercent));
+        setup.energyLossK = Mathf.Clamp01(ReadFloat(energyLoss, setup.mutationPercent));
 
         return setup;
     }
 
     public EcosystemSetup CreateEcosystemFromInputs()
     {
+        RebuildSpeciesPopulationsFromRows();
+
         EcosystemSetup setup = ecosystemTemplate != null
             ? Instantiate(ecosystemTemplate)
             : ScriptableObject.CreateInstance<EcosystemSetup>();
@@ -131,13 +148,43 @@ public class StatsAssetCreator : MonoBehaviour
         setup.height = Mathf.Max(1, ReadInt(heightInput, setup.height));
         setup.grassChance = Mathf.Clamp(ReadFloat(grassChanceInput, setup.grassChance), 0f, 100f);
         setup.meatChance = Mathf.Clamp(ReadFloat(meatChanceInput, setup.meatChance), 0f, 100f);
-
-        if (speciesPopulations != null && speciesPopulations.Count > 0)
-        {
-            setup.speciesPopulations = CloneSpeciesPopulations(speciesPopulations);
-        }
+        setup.speciesPopulations = CloneSpeciesPopulations(speciesPopulations);
 
         return setup;
+    }
+
+    public void AddSpeciesPopulationRow()
+    {
+        if (speciesPopulationRowPrefab == null || speciesPopulationContent == null)
+        {
+            Debug.LogWarning("StatsAssetCreator needs a speciesPopulationRowPrefab and speciesPopulationContent before it can add species rows.", this);
+            return;
+        }
+
+        RefreshAvailableSpecies();
+        if (availableSpecies.Count == 0)
+        {
+            Debug.LogWarning("No StatSetup assets were found in Resources/Stats/Ani.", this);
+            return;
+        }
+
+        SpeciesPopulationRow row = Instantiate(speciesPopulationRowPrefab, speciesPopulationContent);
+        row.Init(availableSpecies, RemoveSpeciesPopulationRow);
+        speciesPopulationRows.Add(row);
+    }
+
+    public void ClearSpeciesPopulationRows()
+    {
+        for (int i = 0; i < speciesPopulationRows.Count; i++)
+        {
+            if (speciesPopulationRows[i] != null)
+            {
+                Destroy(speciesPopulationRows[i].gameObject);
+            }
+        }
+
+        speciesPopulationRows.Clear();
+        speciesPopulations.Clear();
     }
 
     private void AfterSaveAnimal(StatSetup setup)
@@ -183,9 +230,94 @@ public class StatsAssetCreator : MonoBehaviour
         return maxSpeciesID + 1;
     }
 
+    private void RefreshAvailableSpecies()
+    {
+        availableSpecies.Clear();
+
+        StatSetup[] setups = Resources.LoadAll<StatSetup>(AnimalResourcesPath);
+        for (int i = 0; i < setups.Length; i++)
+        {
+            if (setups[i] != null)
+            {
+                availableSpecies.Add(setups[i]);
+            }
+        }
+
+        availableSpecies.Sort((left, right) => string.Compare(GetSpeciesDisplayName(left), GetSpeciesDisplayName(right), System.StringComparison.Ordinal));
+    }
+
+    private void RemoveSpeciesPopulationRow(SpeciesPopulationRow row)
+    {
+        if (row == null)
+        {
+            return;
+        }
+
+        speciesPopulationRows.Remove(row);
+        Destroy(row.gameObject);
+    }
+
+    private void RebuildSpeciesPopulationsFromRows()
+    {
+        if (speciesPopulationRows.Count == 0)
+        {
+            if (speciesPopulationContent != null)
+            {
+                speciesPopulations.Clear();
+            }
+
+            return;
+        }
+
+        Dictionary<StatSetup, int> countsBySpecies = new Dictionary<StatSetup, int>();
+        for (int i = speciesPopulationRows.Count - 1; i >= 0; i--)
+        {
+            SpeciesPopulationRow row = speciesPopulationRows[i];
+            if (row == null)
+            {
+                speciesPopulationRows.RemoveAt(i);
+                continue;
+            }
+
+            if (!row.TryRead(out StatSetup statSetup, out int spawnCount))
+            {
+                continue;
+            }
+
+            if (countsBySpecies.ContainsKey(statSetup))
+            {
+                countsBySpecies[statSetup] += spawnCount;
+            }
+            else
+            {
+                countsBySpecies.Add(statSetup, spawnCount);
+            }
+        }
+
+        speciesPopulations.Clear();
+        foreach (KeyValuePair<StatSetup, int> pair in countsBySpecies)
+        {
+            if (pair.Key == null || pair.Value <= 0)
+            {
+                continue;
+            }
+
+            speciesPopulations.Add(new SpeciesPopulationSetup
+            {
+                statSetup = pair.Key,
+                spawnCount = Mathf.Max(0, pair.Value)
+            });
+        }
+    }
+
     private static List<SpeciesPopulationSetup> CloneSpeciesPopulations(List<SpeciesPopulationSetup> source)
     {
         List<SpeciesPopulationSetup> result = new List<SpeciesPopulationSetup>();
+        if (source == null)
+        {
+            return result;
+        }
+
         for (int i = 0; i < source.Count; i++)
         {
             SpeciesPopulationSetup population = source[i];
@@ -194,14 +326,30 @@ public class StatsAssetCreator : MonoBehaviour
                 continue;
             }
 
+            int spawnCount = Mathf.Max(0, population.spawnCount);
+            if (spawnCount <= 0)
+            {
+                continue;
+            }
+
             result.Add(new SpeciesPopulationSetup
             {
                 statSetup = population.statSetup,
-                spawnCount = Mathf.Max(0, population.spawnCount)
+                spawnCount = spawnCount
             });
         }
 
         return result;
+    }
+
+    private static string GetSpeciesDisplayName(StatSetup setup)
+    {
+        if (setup == null)
+        {
+            return string.Empty;
+        }
+
+        return string.IsNullOrEmpty(setup.speciesName) ? setup.name : setup.speciesName;
     }
 
     private static string GetText(TMP_InputField input, string fallback)

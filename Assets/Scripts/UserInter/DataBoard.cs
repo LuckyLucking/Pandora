@@ -4,11 +4,13 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class DataBoard : MonoBehaviour, IScrollHandler
 {
     private StatSetup animData;
+    public EcosystemSetup currentData;
     private EcosystemSetup ecoData;
 
     [Header("Display")]
@@ -17,6 +19,9 @@ public class DataBoard : MonoBehaviour, IScrollHandler
     public ScrollRect dataScrollRect;
     public RectTransform dataContent;
     public float minScrollContentHeight = 0f;
+
+    [Header("Scene Load")]
+    [SerializeField] private string ecosystemSceneName = "DefaultEco";
 
     [Header("Scroll")]
     public float scrollWheelSensitivity = 0.2f;
@@ -48,6 +53,7 @@ public class DataBoard : MonoBehaviour, IScrollHandler
 
         animData = anim;
         ecoData = null;
+        currentData = null;
 
         dietHabit = anim.dietHabit;
         bodySize = anim.bodySize;
@@ -71,6 +77,7 @@ public class DataBoard : MonoBehaviour, IScrollHandler
         }
 
         ecoData = eco;
+        currentData = eco;
         animData = null;
 
         width = eco.width;
@@ -80,6 +87,24 @@ public class DataBoard : MonoBehaviour, IScrollHandler
 
         SetBoardVisible(true);
         RenderEcosystemData();
+    }
+
+    public void LoadEcosystem()
+    {
+        if (currentData == null)
+        {
+            Debug.LogWarning("DataBoard cannot load an ecosystem because currentData is null.", this);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ecosystemSceneName))
+        {
+            Debug.LogWarning("DataBoard needs an ecosystem scene name before it can load an ecosystem.", this);
+            return;
+        }
+
+        EcosystemLoadContext.Select(currentData);
+        SceneManager.LoadScene(ecosystemSceneName);
     }
 
     private void RenderAnimalData()

@@ -82,6 +82,10 @@ public class AnimalBase : MonoBehaviour
         CacheReferences();
         InitializeFromSetup();
     }
+    protected virtual void Start()
+    {
+        gameObject.name = statSetup.name;
+    }
 
     protected virtual void Update()
     {
